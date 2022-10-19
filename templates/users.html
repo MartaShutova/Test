@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+    <title>CRUD FROM API</title>
+
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-mynav">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">My App</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex bd-highlight mb-3">
+        <div class="me-auto p-2 bd-highlight"><h2>Users</div>
+        <div class="p-2 bd-highlight">
+            <button type="button" class="btn btn-secondary" onclick="showUserCreateBox()">Create</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">First Name</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">Address</th>
+                <th scope="col">Pesel</th>
+                <th scope="col">Birthday</th>
+                <th scope="col">Sex</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody id="mytable">
+            <tr>
+                <?php foreach ($users as $user) {?>
+                <tr>
+                    <td><?php echo $user['id'] ?></td>
+                    <td><?php echo $user['first_name'] ?></td>
+                    <td><?php echo $user['last_name'] ?></td>
+                    <td><?php echo $user['address'] ?></td>
+                    <td><?php echo $user['pesel'] ?></td>
+                    <td><?php echo $user['birthday'] ?></td>
+                    <td><?php echo $user['sex'] ?></td>
+                    <td><button type="button" class="btn btn-outline-secondary edit-button" value="<?php echo $user['id'] ?>">Edit</button>
+                        <button type="button" class="btn btn-outline-danger del-button" value="<?php echo $user['id'] ?>">Del</button></td>
+               </tr>
+                <?php } ?>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.16/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</body>
+</html>
+<script>
+    function showUserCreateBox() {
+        Swal.fire({
+            title: 'Create user',
+            html:
+                '<input id="id" type="hidden">' +
+                '<input id="first_name" class="swal2-input" placeholder="First name" required="required">' +
+                '<input id="last_name" class="swal2-input" placeholder="Last name" required="required">' +
+                '<input id="address" class="swal2-input" placeholder="Address" required="required">' +
+                '<input id="pesel" class="swal2-input" placeholder="Pesel" required="required">',
+            focusConfirm: false,
+            preConfirm: () => {
+                userCreate();
+            }
+        })
+    }
+
+    function userCreate() {
+        const firstName = document.getElementById("first_name").value;
+        const lastName = document.getElementById("last_name").value;
+        const address = document.getElementById("address").value;
+        const pesel = document.getElementById("pesel").value;
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/createUser");
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhttp.send(JSON.stringify({
+            "first_name": firstName, "last_name": lastName, "address": address, "pesel": pesel,
+        }));
+        xhttp.onreadystatechange = function() {
+            if (this.status == 200) {
+                window.location.reload();
+            }
+        };
+    }
+
+    $('.edit-button').click(function () {
+        var id = $(this).val();
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/users/"+id);
+        xhttp.send();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                const user = JSON.parse(this.responseText);
+                Swal.fire({
+                    title: 'Edit User',
+                    html:
+                        '<input id="id" type="hidden" value='+user['id']+'>' +
+                        '<input id="first_name" class="swal2-input" placeholder="First name" value="'+user['first_name']+'">' +
+                        '<input id="last_name" class="swal2-input" placeholder="Last name" value="'+user['last_name']+'">' +
+                        '<input id="address" class="swal2-input" placeholder="Address" value="'+user['address']+'">' +
+                        '<input id="pesel" class="swal2-input" placeholder="Pesel" value="'+user['pesel']+'">',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        userEdit();
+                    }
+                })
+            }
+        };
+    });
+
+
+    function userEdit() {
+        const id = document.getElementById("id").value;
+        const first_name = document.getElementById("first_name").value;
+        const last_name = document.getElementById("last_name").value;
+        const address = document.getElementById("address").value;
+        const pesel = document.getElementById("pesel").value;
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/updateUser/"+id);
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhttp.send(JSON.stringify({
+            "id": id, "first_name": first_name, "last_name": last_name, "address": address, "pesel": pesel
+        }));
+        xhttp.onreadystatechange = function() {
+            if (this.status == 200) {
+                Swal.fire('User with id = ' + id + 'was successfully updated');
+                window.location.reload();
+                //Swal.fire('User with id = ' + id + 'was successfully updated');
+            }
+        };
+    }
+
+    $('.del-button').click(function () {
+        var id = $(this).val();
+        if (confirm('Do you really want to delete user with id = ' + id + '?')) {
+            const xhttp = new XMLHttpRequest();
+            xhttp.open("DELETE", "/deleteUser/"+id);
+            xhttp.send(JSON.stringify({
+                "id": id
+            }));
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                    Swal.fire('User with id = ' + id + 'was successfully deleted');
+                    window.location.reload();
+                    //Swal.fire('User with id = ' + id + 'was successfully updated');
+                }
+            };
+        }
+    });
+</script>
