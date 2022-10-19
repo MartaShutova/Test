@@ -2,6 +2,8 @@
 
 git clone https://github.com/MartaShutova/test.git
 
+cd test
+
 $ composer install
 
 ## Run
