@@ -1,4 +1,6 @@
 ## Installation
+
+git clone https://github.com/MartaShutova/test.git
 $ composer install
 
 ## Run
